@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
 import React, { Fragment, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useToasts } from "react-toast-notifications";
 import { connect } from "react-redux";
 // import { getDiscountPrice } from "../../helpers/product";
 import ProductModal from "./ProductModal";
 import { setProductID } from "../../redux/actions/productActions";
+import { addToWishlist, removeFromWishlist } from "../../redux/actions/wishlistActions";
 const ProductGridSingleTwo = ({
   product,
   // currency,
@@ -21,17 +22,34 @@ const ProductGridSingleTwo = ({
   titlePriceClass,
   defaultStore,
   setProductID,
-  userData
+  userData,
+  wishlistItems = [],
+  addToWishlist,
+  removeFromWishlist
 }) => {
   const [modalShow, setModalShow] = useState(false);
   const { addToast } = useToasts();
+  const history = useHistory();
 
   // const discountedPrice = getDiscountPrice(product.price, product.discount);
   const finalProductPrice = product.originalPrice;
   const finalDiscountedPrice = product.finalPrice;
+  const isInWishlist = wishlistItems.some(item => item.id === product.id);
+
   const onClickProductDetails = (id) => {
     setProductID(id)
   }
+  const handleWishlistClick = () => {
+    if (!userData) {
+      history.push("/login");
+      return;
+    }
+    if (isInWishlist) {
+      removeFromWishlist(product.id, addToast);
+    } else {
+      addToWishlist(product.id, addToast);
+    }
+  };
   return (
     <Fragment>
       <div
@@ -136,20 +154,15 @@ const ProductGridSingleTwo = ({
                   )}
               </div>
             </div>
-            {/* <div className="pro-wishlist-2">
+            <div className="pro-wishlist-2">
               <button
-                className={wishlistItem !== undefined ? "active" : ""}
-                disabled={wishlistItem !== undefined}
-                title={
-                  wishlistItem !== undefined
-                    ? "Added to wishlist"
-                    : "Add to wishlist"
-                }
-                onClick={() => addToWishlist(product, addToast)}
+                className={isInWishlist ? "active" : ""}
+                title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                onClick={handleWishlistClick}
               >
-                <i className="fa fa-heart-o" />
+                <i className={isInWishlist ? "fa fa-heart" : "fa fa-heart-o"} />
               </button>
-            </div> */}
+            </div>
           </div>
         </div>
       </div>
@@ -193,13 +206,20 @@ ProductGridSingleTwo.propTypes = {
 
 const mapStateToProps = state => {
   return {
-    defaultStore: state.merchantData.defaultStore
+    defaultStore: state.merchantData.defaultStore,
+    wishlistItems: state.wishlistData ? state.wishlistData.items : []
   };
 };
 const mapDispatchToProps = dispatch => {
   return {
     setProductID: (value) => {
       dispatch(setProductID(value));
+    },
+    addToWishlist: (productId, addToast) => {
+      dispatch(addToWishlist(productId, addToast));
+    },
+    removeFromWishlist: (productId, addToast) => {
+      dispatch(removeFromWishlist(productId, addToast));
     }
   };
 };
