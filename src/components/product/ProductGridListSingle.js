@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
 import React, { Fragment, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useToasts } from "react-toast-notifications";
 // import { getDiscountPrice } from "../../helpers/product";
 // import Rating from "./sub-components/ProductRating";
 import ProductModal from "./ProductModal";
 import { setProductID } from "../../redux/actions/productActions";
+import { addToWishlist, removeFromWishlist } from "../../redux/actions/wishlistActions";
 import { connect } from "react-redux";
 import StarRatings from 'react-star-ratings';
 const ProductGridListSingle = ({
@@ -22,16 +23,33 @@ const ProductGridListSingle = ({
   setProductID,
   defaultStore,
   userData,
-  strings
+  strings,
+  wishlistItems = [],
+  addToWishlist,
+  removeFromWishlist
 }) => {
   const [modalShow, setModalShow] = useState(false);
   const { addToast } = useToasts();
+  const history = useHistory();
+  const isInWishlist = wishlistItems.some(item => item.id === product.id);
+
+  const handleWishlistClick = () => {
+    if (!userData) {
+      history.push("/login");
+      return;
+    }
+    if (isInWishlist) {
+      removeFromWishlist(product.id, addToast);
+    } else {
+      addToWishlist(product.id, addToast);
+    }
+  };
 
   // const discountedPrice = getDiscountPrice(product.price, product.discount);
   const finalProductPrice = product.originalPrice;
   const finalDiscountedPrice = product.finalPrice;
-  const onClickProductDetails = (id) => {
-    setProductID(id)
+  const onClickProductDetails = (slug) => {
+    setProductID(slug)
   }
 
   return (
@@ -45,7 +63,7 @@ const ProductGridListSingle = ({
           className={`product-wrap ${spaceBottomClass ? spaceBottomClass : ""}`}
         >
           <div className="product-img">
-            <Link to={process.env.PUBLIC_URL + "/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.id)}>
+            <Link to={process.env.PUBLIC_URL + "/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.description.friendlyUrl)}>
               {
                 product.image && <img className="default-img" src={defaultImage(product)} alt="" />
               }
@@ -57,9 +75,13 @@ const ProductGridListSingle = ({
 
             <div className="product-action">
               <div className="pro-same-action pro-wishlist">
-                <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.id)} title="Select options">
-                  <i className="fa fa-cog"></i>
-                </Link>
+                <button
+                  className={isInWishlist ? "active" : ""}
+                  title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                  onClick={handleWishlistClick}
+                >
+                  <i className={isInWishlist ? "fa fa-heart" : "fa fa-heart-o"} />
+                </button>
               </div>
               <div className="pro-same-action pro-cart">
 
@@ -91,7 +113,7 @@ const ProductGridListSingle = ({
           </div>
           <div className="product-content text-center">
             <h3>
-              <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.id)}>
+              <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.description.friendlyUrl)}>
                 {product.description.name}
               </Link>
             </h3>
@@ -125,7 +147,7 @@ const ProductGridListSingle = ({
             <div className="col-xl-4 col-md-5 col-sm-6">
               <div className="product-list-image-wrap">
                 <div className="product-img">
-                  <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.id)}>
+                  <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.description.friendlyUrl)}>
                     {
                       product.image && <img className="default-img img-fluid" src={product.image.imageUrl} alt="" />
                     }
@@ -152,7 +174,7 @@ const ProductGridListSingle = ({
             <div className="col-xl-8 col-md-7 col-sm-6">
               <div className="shop-list-content">
                 <h3>
-                  <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.id)}>
+                  <Link to={"/product/" + product.description.friendlyUrl} onClick={() => onClickProductDetails(product.description.friendlyUrl)}>
                     {product.description.name}
                   </Link>
                 </h3>
@@ -258,13 +280,20 @@ function defaultImage(product) {
 
 const mapStateToProps = state => {
   return {
-    defaultStore: state.merchantData.defaultStore
+    defaultStore: state.merchantData.defaultStore,
+    wishlistItems: state.wishlistData ? state.wishlistData.items : []
   };
 };
 const mapDispatchToProps = dispatch => {
   return {
     setProductID: (value) => {
       dispatch(setProductID(value));
+    },
+    addToWishlist: (productId, addToast) => {
+      dispatch(addToWishlist(productId, addToast));
+    },
+    removeFromWishlist: (productId, addToast) => {
+      dispatch(removeFromWishlist(productId, addToast));
     }
   };
 };
