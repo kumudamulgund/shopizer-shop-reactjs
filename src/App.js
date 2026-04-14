@@ -35,6 +35,7 @@ const ForgotPassword = lazy(() => import("./pages/other/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/other/ResetPassword"));
 
 const Cart = lazy(() => import("./pages/other/Cart"));
+const Wishlist = lazy(() => import("./pages/other/Wishlist"));
 const RecentOrder = lazy(() => import("./pages/other/RecentOrder"));
 const OrderDetails = lazy(() => import("./pages/other/OrderDetails"));
 const Checkout = lazy(() => import("./pages/other/Checkout"));
@@ -151,6 +152,10 @@ const App = (props) => {
                 <Route
                   path="/cart"
                   component={Cart}
+                />
+                <Route
+                  path="/wishlist"
+                  component={Wishlist}
                 />
                 <Route
                   path="/recent-order"
