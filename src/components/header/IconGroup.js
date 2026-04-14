@@ -6,6 +6,7 @@ import MenuCart from "./sub-components/MenuCart";
 import { deleteFromCart, deleteAllFromCart } from "../../redux/actions/cartActions";
 import { setUser } from "../../redux/actions/userAction";
 import { getCart } from "../../redux/actions/cartActions";
+import { getWishlist } from "../../redux/actions/wishlistActions";
 import { setLocalData, getLocalData } from '../../util/helper';
 import { multilanguage } from "redux-multilanguage";
 import IdleTimer from 'react-idle-timer';
@@ -16,6 +17,7 @@ const IconGroup = ({
   cartData,
   cartCount,
   // wishlistData,
+  wishlistCount,
   // compareData,
   deleteFromCart,
   iconWhiteClass,
@@ -23,7 +25,8 @@ const IconGroup = ({
   setUser,
   deleteAllFromCart,
   strings,
-  getCart
+  getCart,
+  getWishlist
 }) => {
   const pathname = useRouteMatch();
   const history = useHistory();
@@ -49,6 +52,7 @@ const IconGroup = ({
     // }
     if (userData) {
       getProfile()
+      getWishlist()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps 
   }, [])
@@ -234,14 +238,14 @@ const IconGroup = ({
           </span>
         </Link>
       </div> */}
-      {/* <div className="same-style header-wishlist">
+      <div className="same-style header-wishlist">
         <Link to={process.env.PUBLIC_URL + "/wishlist"}>
           <i className="pe-7s-like" />
           <span className="count-style">
-            {wishlistData && wishlistData.length ? wishlistData.length : 0}
+            {wishlistCount}
           </span>
         </Link>
-      </div> */}
+      </div>
       {
         pathname.url !== '/checkout' &&
         <div className="same-style cart-wrap d-none d-lg-block">
@@ -289,7 +293,8 @@ const mapStateToProps = state => {
   return {
     cartData: state.cartData.cartItems,
     cartCount: state.cartData.cartCount,
-    userData: state.userData.userData
+    userData: state.userData.userData,
+    wishlistCount: state.wishlistData ? state.wishlistData.count : 0
   };
 };
 
@@ -306,6 +311,9 @@ const mapDispatchToProps = dispatch => {
     },
     getCart: (cartID, userData) => {
       dispatch(getCart(cartID, userData));
+    },
+    getWishlist: () => {
+      dispatch(getWishlist());
     }
   };
 };
