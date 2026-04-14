@@ -52,7 +52,7 @@ const OrderDetails = ({
     }
     const onClickItem = (product) => {
         // console.log(product);
-        setProductID(product.id)
+        setProductID(product.description.friendlyUrl)
     }
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,

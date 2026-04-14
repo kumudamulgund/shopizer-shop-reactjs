@@ -19,26 +19,26 @@ const ProductDetails = ({ strings, location, productID, currentLanguageCode, set
 
   useEffect(() => {
     getProductDetails();
-    getReview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getProductDetails = async () => {
     setLoader(true)
-    let action = constant.ACTION.PRODUCTS + productID + '?lang=' + currentLanguageCode + '&store=' + defaultStore;
+    let action = constant.ACTION.PRODUCT + productID + '?lang=' + currentLanguageCode + '&store=' + defaultStore;
     try {
       let response = await WebService.get(action);
       if (response) {
         console.log(response)
         setProductDetails(response)
+        getReview(response.id)
         setLoader(false)
       }
     } catch (error) {
       setLoader(false)
     }
   }
-  const getReview = async () => {
-    let action = constant.ACTION.PRODUCTS + productID + '/reviews?store=' + defaultStore;
+  const getReview = async (numericId) => {
+    let action = constant.ACTION.PRODUCT + numericId + '/reviews?store=' + defaultStore;
     try {
       let response = await WebService.get(action);
       if (response) {
@@ -108,9 +108,8 @@ ProductDetails.propTypes = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  // const itemId = ownProps.match.params.id;
   return {
-    productID: state.productData.productid,
+    productID: ownProps.match.params.id,
     currentLanguageCode: state.multilanguage.currentLanguageCode,
     defaultStore: state.merchantData.defaultStore
   };

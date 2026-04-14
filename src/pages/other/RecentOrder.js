@@ -54,7 +54,7 @@ const RecentOrder = ({
   }
   const onClickItem = (product) => {
     // console.log(product);
-    setProductID(product.id)
+    setProductID(product.description.friendlyUrl)
   }
   return (
     <Fragment>
