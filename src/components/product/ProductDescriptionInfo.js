@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
 import React, { Fragment, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { connect } from "react-redux";
 // import { getProductCartQuantity } from "../../helpers/product";
 import { isValidObject } from "../../util/helper";
 import { addToCart } from "../../redux/actions/cartActions";
 // import { addToWishlist } from "../../redux/actions/wishlistActions";
+import { addToWishlist, removeFromWishlist } from "../../redux/actions/wishlistActions";
 // import { addToCompare } from "../../redux/actions/compareActions";
 // import Rating from "./sub-components/ProductRating";
 import StarRatings from 'react-star-ratings';
@@ -27,7 +28,10 @@ const ProductDescriptionInfo = ({
   productID,
   defaultStore,
   userData,
-  strings
+  strings,
+  wishlistItems = [],
+  addToWishlist,
+  removeFromWishlist
   // addToWishlist,
   // addToCompare
 }) => {
@@ -36,6 +40,20 @@ const ProductDescriptionInfo = ({
   const [isDiscount, setIsDiscount] = useState(product.discounted)
   const [selectedProductColor, setSelectedProductColor] = useState([])
   const [quantityCount, setQuantityCount] = useState(1);
+  const history = useHistory();
+  const isInWishlist = wishlistItems.some(item => item.id === product.id);
+
+  const handleWishlistClick = () => {
+    if (!userData) {
+      history.push("/login");
+      return;
+    }
+    if (isInWishlist) {
+      removeFromWishlist(product.id, addToast);
+    } else {
+      addToWishlist(product.id, addToast);
+    }
+  };
   useEffect(() => {
     // console.log(strings);
     getDefualtsOption()
@@ -308,34 +326,15 @@ const ProductDescriptionInfo = ({
                 <button disabled>{strings["Out of Stock"]}</button>
               )}
           </div>
-          {/* <div className="pro-details-wishlist">
+          <div className="pro-details-wishlist">
             <button
-              className={wishlistItem !== undefined ? "active" : ""}
-              disabled={wishlistItem !== undefined}
-              title={
-                wishlistItem !== undefined
-                  ? "Added to wishlist"
-                  : "Add to wishlist"
-              }
-              onClick={() => addToWishlist(product, addToast)}
+              className={isInWishlist ? "active" : ""}
+              title={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+              onClick={handleWishlistClick}
             >
-              <i className="pe-7s-like" />
+              <i className={isInWishlist ? "fa fa-heart" : "fa fa-heart-o"} />
             </button>
           </div>
-          <div className="pro-details-compare">
-            <button
-              className={compareItem !== undefined ? "active" : ""}
-              disabled={compareItem !== undefined}
-              title={
-                compareItem !== undefined
-                  ? "Added to compare"
-                  : "Add to compare"
-              }
-              onClick={() => addToCompare(product, addToast)}
-            >
-              <i className="pe-7s-shuffle" />
-            </button>
-          </div> */}
         </div>
         // )
       }
@@ -440,7 +439,8 @@ const mapStateToProps = (state, ownProps) => {
     productID: prodID,
     cartItems: state.cartData.cartItems,
     defaultStore: state.merchantData.defaultStore,
-    userData: state.userData.userData
+    userData: state.userData.userData,
+    wishlistItems: state.wishlistData ? state.wishlistData.items : []
   };
 };
 const mapDispatchToProps = dispatch => {
@@ -474,6 +474,12 @@ const mapDispatchToProps = dispatch => {
     // addToWishlist: (item, addToast) => {
     //   dispatch(addToWishlist(item, addToast));
     // },
+    addToWishlist: (productId, addToast) => {
+      dispatch(addToWishlist(productId, addToast));
+    },
+    removeFromWishlist: (productId, addToast) => {
+      dispatch(removeFromWishlist(productId, addToast));
+    },
     // addToCompare: (item, addToast) => {
     //   dispatch(addToCompare(item, addToast));
     // }
